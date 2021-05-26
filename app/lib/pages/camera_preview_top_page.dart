@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CameraPreviewTopPage extends StatefulWidget {
@@ -39,7 +41,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a picture')),
+      appBar: AppBar(
+        title: const Text('Capture a video'),
+      ),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -51,25 +55,36 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            await _initializeControllerFuture;
-            if (_controller.value.isRecordingVideo) {
-              XFile video = await _controller.stopVideoRecording();
-              print(video.path);
-              return;
-            }
-            try {
-              await _controller.startVideoRecording();
-            } on CameraException catch (e) {
-              print(e);
-            }
-          } catch (e) {
-            print(e);
-          }
-        },
+        onPressed: startAndStopVideoRecording,
         child: const Icon(Icons.camera_alt),
       ),
     );
+  }
+
+  void startAndStopVideoRecording() async {
+    try {
+      await _initializeControllerFuture;
+      if (_controller.value.isRecordingVideo) {
+        XFile video = await _controller.stopVideoRecording();
+        File videoFile = File(video.path);
+        final String videoPath = "/videos/" + basename(video.path);
+        Reference ref = FirebaseStorage.instance.ref().child(videoPath);
+        TaskSnapshot storageTaskSnapshot = await ref.putFile(videoFile);
+        if (storageTaskSnapshot.ref != null) {
+          final downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
+          print('Stop video recording and save video.');
+          print(downloadUrl.toString());
+        }
+        return;
+      }
+      try {
+        await _controller.startVideoRecording();
+        print('Start video recording.');
+      } on CameraException catch (e) {
+        print(e);
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 }
