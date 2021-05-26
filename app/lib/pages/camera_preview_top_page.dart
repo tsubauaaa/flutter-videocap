@@ -1,8 +1,9 @@
-import 'package:app/pages/display_picture_page.dart';
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
-// A screen that allows users to take a picture using a given camera.
 class CameraPreviewTopPage extends StatefulWidget {
   const CameraPreviewTopPage({
     Key key,
@@ -53,14 +54,16 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         onPressed: () async {
           try {
             await _initializeControllerFuture;
-            final image = await _controller.takePicture();
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DisplayPicturePage(
-                  imagePath: image.path,
-                ),
-              ),
-            );
+            if (_controller.value.isRecordingVideo) {
+              XFile video = await _controller.stopVideoRecording();
+              print(video.path);
+              return;
+            }
+            try {
+              await _controller.startVideoRecording();
+            } on CameraException catch (e) {
+              print(e);
+            }
           } catch (e) {
             print(e);
           }
