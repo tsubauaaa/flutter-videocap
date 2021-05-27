@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_beep/flutter_beep.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 class CameraPreviewTopPage extends StatefulWidget {
   const CameraPreviewTopPage({
@@ -65,6 +65,7 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
     try {
       await _initializeControllerFuture;
       if (_controller.value.isRecordingVideo) {
+        FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
         XFile video = await _controller.stopVideoRecording();
         File videoFile = File(video.path);
         final String videoPath = "/videos/" + basename(video.path);
@@ -78,6 +79,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         return;
       }
       try {
+        FlutterBeep.playSysSound(
+          iOSSoundIDs.BeginVideoRecording,
+        );
         await _controller.startVideoRecording();
         print('Start video recording.');
       } on CameraException catch (e) {
