@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:app/components/blinking_text_animation.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_beep/flutter_beep.dart';
 import 'package:path/path.dart';
@@ -20,6 +22,7 @@ class CameraPreviewTopPage extends StatefulWidget {
 class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   CameraController _controller;
   Future<void> _initializeControllerFuture;
+  bool isRecording = false;
 
   @override
   void initState() {
@@ -33,7 +36,7 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     _controller.dispose();
     super.dispose();
   }
@@ -48,7 +51,17 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_controller);
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                CameraPreview(_controller),
+                if (isRecording)
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: BlinkingTextAnimation(),
+                  ),
+              ],
+            );
           } else {
             return const Center(child: CircularProgressIndicator());
           }
@@ -56,7 +69,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: startAndStopVideoRecording,
-        child: const Icon(Icons.camera_alt),
+        child: const Icon(
+          CupertinoIcons.videocam_circle_fill,
+        ),
       ),
     );
   }
@@ -67,6 +82,10 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
       if (_controller.value.isRecordingVideo) {
         FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
         XFile video = await _controller.stopVideoRecording();
+        setState(() {
+          isRecording = _controller.value.isRecordingVideo;
+        });
+
         File videoFile = File(video.path);
         final String videoPath = "/videos/" + basename(video.path);
         Reference ref = FirebaseStorage.instance.ref().child(videoPath);
@@ -84,6 +103,7 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         );
         await _controller.startVideoRecording();
         print('Start video recording.');
+        setState(() => isRecording = _controller.value.isRecordingVideo);
       } on CameraException catch (e) {
         print(e);
       }
