@@ -27,9 +27,7 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _initializeCamera();
-    });
+    _initializeCamera();
   }
 
   Future<void> _initializeCamera() async {
