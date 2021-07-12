@@ -71,13 +71,29 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
                     alignment: Alignment.topCenter,
                     child: BlinkingTextAnimation(),
                   ),
+                Positioned(
+                  top: 20,
+                  right: 20,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: CircleBorder(),
+                        padding: EdgeInsets.all(16),
+                        primary: Colors.tealAccent),
+                    child: const Icon(
+                      CupertinoIcons.camera_rotate_fill,
+                      size: 20,
+                      color: Colors.black,
+                    ),
+                    onPressed: _toggleCameraDirection,
+                  ),
+                ),
               ],
             )
           : const Center(
               child: CircularProgressIndicator(),
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: startAndStopVideoRecording,
+        onPressed: _startAndStopVideoRecording,
         child: const Icon(
           CupertinoIcons.videocam_circle_fill,
         ),
@@ -85,7 +101,7 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
     );
   }
 
-  void startAndStopVideoRecording() async {
+  void _startAndStopVideoRecording() async {
     try {
       if (_cameraController.value.isRecordingVideo) {
         FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
@@ -118,5 +134,15 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> _toggleCameraDirection() async {
+    if (_direction == CameraLensDirection.back) {
+      _direction = CameraLensDirection.front;
+    } else {
+      _direction = CameraLensDirection.back;
+    }
+    await _cameraController.dispose();
+    await _initializeCamera();
   }
 }
