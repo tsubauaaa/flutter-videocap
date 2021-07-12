@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>536765229975-hn0tpfgli1lpcf7m10j2tgms0511q3re.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.536765229975-hn0tpfgli1lpcf7m10j2tgms0511q3re</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDHChzwi6pK3Z9bF7GeYEL0ui2-Ndvmb3g</string>
+	<key>GCM_SENDER_ID</key>
+	<string>536765229975</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.tsubauaaa.flutter-videocap</string>
+	<key>PROJECT_ID</key>
+	<string>flutter-videocap</string>
+	<key>STORAGE_BUCKET</key>
+	<string>flutter-videocap.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:536765229975:ios:07f2ef22c22d13b58332d2</string>
+</dict>
+</plist>
