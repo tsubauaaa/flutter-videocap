@@ -20,7 +20,6 @@ class CameraPreviewTopPage extends StatefulWidget {
 
 class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   CameraController _cameraController;
-  Future<void> _initializeControllerFuture;
   bool _isRecording = false;
 
   CameraLensDirection _direction = CameraLensDirection.front;
@@ -88,7 +87,6 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
 
   void startAndStopVideoRecording() async {
     try {
-      await _initializeControllerFuture;
       if (_cameraController.value.isRecordingVideo) {
         FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
         XFile video = await _cameraController.stopVideoRecording();
