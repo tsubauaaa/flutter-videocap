@@ -19,7 +19,7 @@ class CameraPreviewTopPage extends StatefulWidget {
 }
 
 class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
-  CameraController _camera;
+  CameraController _cameraController;
   Future<void> _initializeControllerFuture;
   bool _isRecording = false;
 
@@ -36,12 +36,12 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   Future<void> _initializeCamera() async {
     final CameraDescription description =
         await ScannerUtils.getCamera(_direction);
-    _camera = CameraController(
+    _cameraController = CameraController(
       description,
       ResolutionPreset.high,
       enableAudio: false,
     );
-    _camera.initialize().then((_) {
+    _cameraController.initialize().then((_) {
       if (!mounted) {
         return;
       }
@@ -52,7 +52,7 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
 
   @override
   void dispose() async {
-    _camera.dispose();
+    _cameraController.dispose();
     super.dispose();
   }
 
@@ -62,11 +62,11 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
       appBar: AppBar(
         title: const Text('Capture a video'),
       ),
-      body: _camera != null
+      body: _cameraController != null && _cameraController.value.isInitialized
           ? Stack(
               fit: StackFit.expand,
               children: [
-                CameraPreview(_camera),
+                CameraPreview(_cameraController),
                 if (_isRecording)
                   Align(
                     alignment: Alignment.topCenter,
@@ -89,11 +89,11 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   void startAndStopVideoRecording() async {
     try {
       await _initializeControllerFuture;
-      if (_camera.value.isRecordingVideo) {
+      if (_cameraController.value.isRecordingVideo) {
         FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
-        XFile video = await _camera.stopVideoRecording();
+        XFile video = await _cameraController.stopVideoRecording();
         setState(() {
-          _isRecording = _camera.value.isRecordingVideo;
+          _isRecording = _cameraController.value.isRecordingVideo;
         });
 
         File videoFile = File(video.path);
@@ -111,9 +111,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         FlutterBeep.playSysSound(
           iOSSoundIDs.BeginVideoRecording,
         );
-        await _camera.startVideoRecording();
+        await _cameraController.startVideoRecording();
         print('Start video recording.');
-        setState(() => _isRecording = _camera.value.isRecordingVideo);
+        setState(() => _isRecording = _cameraController.value.isRecordingVideo);
       } on CameraException catch (e) {
         print(e);
       }

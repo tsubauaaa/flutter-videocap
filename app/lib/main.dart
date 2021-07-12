@@ -8,8 +8,6 @@ import 'pages/camera_preview_top_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  CameraDescription frontCamera;
-  print(frontCamera.toString());
   runApp(
     MaterialApp(
       theme: ThemeData.dark(),
