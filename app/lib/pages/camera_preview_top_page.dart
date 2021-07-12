@@ -28,7 +28,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    setState(() {
+      _initializeCamera();
+    });
   }
 
   Future<void> _initializeCamera() async {
@@ -39,8 +41,12 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
       ResolutionPreset.high,
       enableAudio: false,
     );
-    setState(() {
-      _initializeControllerFuture = _camera.initialize();
+    _camera.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      // Build page when camera initializes
+      setState(() {});
     });
   }
 
@@ -56,11 +62,8 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
       appBar: AppBar(
         title: const Text('Capture a video'),
       ),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (_camera != null) {
-            return Stack(
+      body: _camera != null
+          ? Stack(
               fit: StackFit.expand,
               children: [
                 CameraPreview(_camera),
@@ -70,12 +73,10 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
                     child: BlinkingTextAnimation(),
                   ),
               ],
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+            )
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: startAndStopVideoRecording,
         child: const Icon(
