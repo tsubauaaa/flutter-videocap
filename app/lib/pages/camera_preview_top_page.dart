@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app/components/blinking_text_animation.dart';
+import 'package:app/utils/scanner_utils.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,33 +12,41 @@ import 'package:path/path.dart';
 class CameraPreviewTopPage extends StatefulWidget {
   const CameraPreviewTopPage({
     Key key,
-    @required this.camera,
   }) : super(key: key);
-  final CameraDescription camera;
 
   @override
   CameraPreviewTopPageState createState() => CameraPreviewTopPageState();
 }
 
 class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
-  CameraController _controller;
+  CameraController _camera;
   Future<void> _initializeControllerFuture;
-  bool isRecording = false;
+  bool _isRecording = false;
+
+  CameraLensDirection _direction = CameraLensDirection.front;
 
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(
-      widget.camera,
-      ResolutionPreset.medium,
-    );
+    _initializeCamera();
+  }
 
-    _initializeControllerFuture = _controller.initialize();
+  Future<void> _initializeCamera() async {
+    final CameraDescription description =
+        await ScannerUtils.getCamera(_direction);
+    _camera = CameraController(
+      description,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+    setState(() {
+      _initializeControllerFuture = _camera.initialize();
+    });
   }
 
   @override
   void dispose() async {
-    _controller.dispose();
+    _camera.dispose();
     super.dispose();
   }
 
@@ -50,12 +59,12 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
+          if (_camera != null) {
             return Stack(
               fit: StackFit.expand,
               children: [
-                CameraPreview(_controller),
-                if (isRecording)
+                CameraPreview(_camera),
+                if (_isRecording)
                   Align(
                     alignment: Alignment.topCenter,
                     child: BlinkingTextAnimation(),
@@ -79,11 +88,11 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
   void startAndStopVideoRecording() async {
     try {
       await _initializeControllerFuture;
-      if (_controller.value.isRecordingVideo) {
+      if (_camera.value.isRecordingVideo) {
         FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
-        XFile video = await _controller.stopVideoRecording();
+        XFile video = await _camera.stopVideoRecording();
         setState(() {
-          isRecording = _controller.value.isRecordingVideo;
+          _isRecording = _camera.value.isRecordingVideo;
         });
 
         File videoFile = File(video.path);
@@ -101,9 +110,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         FlutterBeep.playSysSound(
           iOSSoundIDs.BeginVideoRecording,
         );
-        await _controller.startVideoRecording();
+        await _camera.startVideoRecording();
         print('Start video recording.');
-        setState(() => isRecording = _controller.value.isRecordingVideo);
+        setState(() => _isRecording = _camera.value.isRecordingVideo);
       } on CameraException catch (e) {
         print(e);
       }

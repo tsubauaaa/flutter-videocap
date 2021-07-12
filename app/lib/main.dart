@@ -9,25 +9,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   CameraDescription frontCamera;
-  await availableCameras().then(
-    (cameras) {
-      frontCamera = cameras.firstWhere(
-          (description) =>
-              description.lensDirection == CameraLensDirection.front,
-          orElse: () => null);
-      if (frontCamera == null) {
-        return;
-      }
-    },
-  );
-
   print(frontCamera.toString());
   runApp(
     MaterialApp(
       theme: ThemeData.dark(),
-      home: CameraPreviewTopPage(
-        camera: frontCamera,
-      ),
+      home: CameraPreviewTopPage(),
     ),
   );
 }
