@@ -1,2 +1,4 @@
 GoogleService-info.plist
 flutter-videocap-1252d31ef4eb.json
+*.dat
+*.csv
