@@ -1,112 +1,84 @@
 import 'dart:io';
 
 import 'package:app/components/blinking_text_animation.dart';
-import 'package:app/utils/scanner_utils.dart';
+import 'package:app/providers/camera_provider.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_beep/flutter_beep.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:path/path.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class CameraPreviewTopPage extends StatefulWidget {
-  const CameraPreviewTopPage({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  CameraPreviewTopPageState createState() => CameraPreviewTopPageState();
-}
-
-class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
-  CameraController _cameraController;
-  bool _isRecording = false;
-
-  CameraLensDirection _direction = CameraLensDirection.front;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    final CameraDescription description =
-        await ScannerUtils.getCamera(_direction);
-    _cameraController = CameraController(
-      description,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-    _cameraController.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      // Build page when camera initializes
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() async {
-    _cameraController.dispose();
-    super.dispose();
-  }
-
+class CameraPreviewTopPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
+    final isRecording = useState(false);
+    final index = useState(0);
+    final videoCapCmera = useProvider(cameraProvider(index.value));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Capture a video'),
       ),
-      body: _cameraController != null && _cameraController.value.isInitialized
-          ? Stack(
-              fit: StackFit.expand,
-              children: [
-                CameraPreview(_cameraController),
-                if (_isRecording)
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: BlinkingTextAnimation(),
-                  ),
-                Positioned(
-                  top: 20,
-                  right: 20,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        shape: CircleBorder(),
-                        padding: EdgeInsets.all(16),
-                        primary: Colors.tealAccent),
-                    child: const Icon(
-                      CupertinoIcons.camera_rotate_fill,
-                      size: 20,
-                      color: Colors.black,
-                    ),
-                    onPressed: _toggleCameraDirection,
-                  ),
+      body: videoCapCmera.when(
+        data: (camera) => Stack(
+          fit: StackFit.expand,
+          children: [
+            CameraPreview(camera),
+            if (isRecording.value)
+              Align(
+                alignment: Alignment.topCenter,
+                child: BlinkingTextAnimation(),
+              ),
+            Positioned(
+              top: 20,
+              right: 20,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    shape: CircleBorder(),
+                    padding: EdgeInsets.all(16),
+                    primary: Colors.tealAccent),
+                child: const Icon(
+                  CupertinoIcons.camera_rotate_fill,
+                  size: 20,
+                  color: Colors.black,
                 ),
-              ],
-            )
-          : const Center(
-              child: CircularProgressIndicator(),
+                onPressed: () {},
+              ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _startAndStopVideoRecording,
-        child: const Icon(
-          CupertinoIcons.videocam_circle_fill,
+            Positioned(
+              bottom: 40,
+              right: 40,
+              child: FloatingActionButton(
+                onPressed: () =>
+                    startAndStopVideoRecording(camera, isRecording),
+                child: const Icon(
+                  CupertinoIcons.videocam_circle_fill,
+                ),
+              ),
+            )
+          ],
+        ),
+        loading: () => Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (err, stack) => Center(
+          child: Text(
+            err.toString(),
+          ),
         ),
       ),
     );
   }
 
-  void _startAndStopVideoRecording() async {
+  Future<void> startAndStopVideoRecording(CameraController cameraController,
+      ValueNotifier<bool> isRecording) async {
     try {
-      if (_cameraController.value.isRecordingVideo) {
+      if (cameraController.value.isRecordingVideo) {
         FlutterBeep.playSysSound(iOSSoundIDs.EndVideoRecording);
-        XFile video = await _cameraController.stopVideoRecording();
-        setState(() {
-          _isRecording = _cameraController.value.isRecordingVideo;
-        });
+        XFile video = await cameraController.stopVideoRecording();
+        isRecording.value = cameraController.value.isRecordingVideo;
 
         File videoFile = File(video.path);
         final String videoPath = "/videos/" + basename(video.path);
@@ -123,9 +95,9 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
         FlutterBeep.playSysSound(
           iOSSoundIDs.BeginVideoRecording,
         );
-        await _cameraController.startVideoRecording();
+        await cameraController.startVideoRecording();
         print('Start video recording.');
-        setState(() => _isRecording = _cameraController.value.isRecordingVideo);
+        isRecording.value = cameraController.value.isRecordingVideo;
       } on CameraException catch (e) {
         print(e);
       }
@@ -134,13 +106,13 @@ class CameraPreviewTopPageState extends State<CameraPreviewTopPage> {
     }
   }
 
-  Future<void> _toggleCameraDirection() async {
-    if (_direction == CameraLensDirection.back) {
-      _direction = CameraLensDirection.front;
-    } else {
-      _direction = CameraLensDirection.back;
-    }
-    await _cameraController.dispose();
-    await _initializeCamera();
-  }
+// Future<void> _toggleCameraDirection() async {
+  //   if (_direction == CameraLensDirection.back) {
+  //     _direction = CameraLensDirection.front;
+  //   } else {
+  //     _direction = CameraLensDirection.back;
+  //   }
+  //   await _cameraController.dispose();
+  //   await _initializeCamera();
+  // }
 }
