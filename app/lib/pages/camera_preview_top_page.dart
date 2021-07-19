@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:app/components/blinking_text_animation.dart';
-import 'package:app/providers/camera_provider.dart';
+import 'package:app/controllers//camera_provider.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,12 +11,19 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:path/path.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+final indexProvider = StateNotifierProvider((ref) => IndexController());
+
+class IndexController extends StateNotifier<int> {
+  IndexController() : super(0);
+
+  void change() => state == 0 ? state++ : state--;
+}
+
 class CameraPreviewTopPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final isRecording = useState(false);
-    final index = useState(0);
-    final videoCapCmera = useProvider(cameraProvider(index.value));
+    final videoCapCmera = useProvider(cameraProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Capture a video'),
@@ -25,7 +32,7 @@ class CameraPreviewTopPage extends HookWidget {
         data: (camera) => Stack(
           fit: StackFit.expand,
           children: [
-            CameraPreview(camera),
+            CameraPreview(camera.cameraController),
             if (isRecording.value)
               Align(
                 alignment: Alignment.topCenter,
@@ -44,15 +51,15 @@ class CameraPreviewTopPage extends HookWidget {
                   size: 20,
                   color: Colors.black,
                 ),
-                onPressed: () {},
+                onPressed: () => context.read(indexProvider.notifier).change(),
               ),
             ),
             Positioned(
               bottom: 40,
               right: 40,
               child: FloatingActionButton(
-                onPressed: () =>
-                    startAndStopVideoRecording(camera, isRecording),
+                onPressed: () => startAndStopVideoRecording(
+                    camera.cameraController, isRecording),
                 child: const Icon(
                   CupertinoIcons.videocam_circle_fill,
                 ),
