@@ -1,8 +1,5 @@
-import json
-
 import cv2
 import mediapipe as mp
-from google.protobuf.json_format import MessageToJson
 
 mp_drawing = mp.solutions.drawing_utils
 mp_face_mesh = mp.solutions.face_mesh
@@ -18,14 +15,13 @@ with mp_face_mesh.FaceMesh(
     if not results.multi_face_landmarks:
         print("results are empty.")
         exit()
-    elif len(results.multi_face_landmarks) > 1:
-        print("There are multiple faces.")
-        exit()
-
-    face_landmarks = json.loads((MessageToJson(results.multi_face_landmarks[0])))['landmark']
-
-    print("face_landmarks:", face_landmarks)
-    face_points = [[face_landmark["x"], face_landmark["y"]] for face_landmark in face_landmarks]
-    
-    print(face_points)
-    print(len(face_points))
+    annotated_image = image.copy()
+    for face_landmarks in results.multi_face_landmarks:
+        print("face_landmarks:", face_landmarks)
+        mp_drawing.draw_landmarks(
+            image=annotated_image,
+            landmark_list=face_landmarks,
+            connections=mp_face_mesh.FACE_CONNECTIONS,
+            landmark_drawing_spec=drawing_spec,
+            connection_drawing_spec=drawing_spec)
+    cv2.imwrite("./annotated_image.png", annotated_image)

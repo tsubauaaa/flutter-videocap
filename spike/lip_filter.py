@@ -26,12 +26,14 @@ def landmark_detection(faces ,gray_img):
             #cv2.circle(img,(x,y),2,(0,0,255),2,cv2.FILLED)
             #cv2.putText(img,str(n),(x,y-10),cv2.FONT_HERSHEY_COMPLEX_SMALL,0.5,(255,0,0),1)
             # The above two lines can be used to display the landmarks and get the indices of other parts like nose,eyes etc.
-    print(face_points)
-    print(len(face_points))
+    # print(face_points_array)
+    # print(len(face_points_array))
+    # print(type(face_points_array))
     return face_points_array
 
 
 def filter(img, points, scale=0.5, masked=False, cropped=True):
+    print([points])
     if masked:
         mask = np.zeros_like(img)
         mask = cv2.fillPoly(mask, [points], (255, 255, 255))
