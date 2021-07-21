@@ -7,10 +7,10 @@ from google.protobuf.json_format import MessageToJson
 
 
 def filter(img, points, scale=0.5, masked=False, cropped=True):
-    print([points])
     if masked:
         mask = np.zeros_like(img)
-        mask = cv2.fillPoly(mask, [points], (255, 255, 255))
+        for point in points:
+            mask = cv2.ellipse(mask, (point, (50, 20), 0), (255, 255, 255), thickness=-1)
         img = cv2.bitwise_and(img, mask)
     if cropped:
         bounding_box = cv2.boundingRect(points)
@@ -45,14 +45,13 @@ with mp_face_mesh.FaceMesh(
 
     face_points = [[int(face_landmark["x"] * width), int(face_landmark["y"] * height)] for face_landmark in face_landmarks]
 
-    face_points_array = np.array(face_points)
+    left_eye_center_point = face_points[226]
+    right_eye_center_point = face_points[446]
+    left_mouse_center_point = face_points[57]
+    right_mouse_center_point = face_points[287]
+    drawing_points = [left_eye_center_point, right_eye_center_point, left_mouse_center_point, right_mouse_center_point]
     
-    # print(face_points_array)
-    # print(len(face_points_array))
-    # print(type(face_points_array))
-
-
-    img_lips = filter(image, face_points_array[49:61], 3, masked=True, cropped=False)
+    img_lips = filter(image, drawing_points, 3, masked=True, cropped=False)
 
     img_color_lips = np.zeros_like(img_lips)
     color = (0, 0, 255)

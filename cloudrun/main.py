@@ -21,9 +21,9 @@ def download_video(envelope):
 
 
 @app.route("/openface", methods=["POST"])
-def main():
+def openface():
     envelope = request.get_json()
-    print(f'Recieved {envelope["message"]}.')
+    print(f'Recieved {envelope}.')
 
     # if remove_dir exsists then remove
     if os.path.isdir(PROCESSED_DIR):
@@ -36,6 +36,9 @@ def main():
     if cp.returncode != 0:
         print("FeatureExtraction failed.", file=sys.stderr)
 
+    print("Done.")
+
+    return ("", 204)
 
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT")) if os.getenv("PORT") else 8080
