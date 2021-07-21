@@ -9,7 +9,7 @@ with mp_face_mesh.FaceMesh(
         static_image_mode=True,
         max_num_faces=1,
         min_detection_confidence=0.5) as face_mesh:
-    image = cv2.imread("./aligned/frame_det_00_001600.bmp")
+    image = cv2.imread("./out.png")
     results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     if not results.multi_face_landmarks:
