@@ -7,7 +7,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 
 WORKDIR /app
-ADD . /app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -47,10 +46,15 @@ RUN apt-get update && apt-get install -y \
     && git clone https://github.com/TadasBaltrusaitis/OpenFace.git \
     && cd OpenFace && mkdir build && cd build \
     && cmake -D CMAKE_CXX_COMPILER=g++-8 -D CMAKE_C_COMPILER=gcc-8 -D CMAKE_BUILD_TYPE=RELEASE .. \
-    && make && cd ../.. \
-    && mv cen_patches_*_of.dat OpenFace/build/bin/model/patch_experts/
+    && make && cd ../..
+
+COPY cen_patches_*_of.dat OpenFace/build/bin/model/patch_experts/
+
+COPY requirements.txt .
 
 RUN apt-get install -y python3-pip \
     && python3.8 -m pip install --no-cache-dir -r requirements.txt
+
+COPY main.py .
 
 CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app

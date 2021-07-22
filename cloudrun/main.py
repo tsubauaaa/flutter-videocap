@@ -5,20 +5,21 @@ import sys
 import base64
 from flask import Flask, request
 from google.cloud import storage
+import tempfile
 
 app = Flask(__name__)
 
-BUCKET_NAME = "video"
-WORK_DIR = "/app/"
+BUCKET_NAME = "flutter-videocap.appspot.com"
 PROCESSED_DIR = "/app/processed"
+client = storage.Client()
 
 
 def download_video(file_name):
-    client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
-    blob = bucket.blob(file_name)
-    with open(WORK_DIR + file_name, "wb") as f:
-        blob.download_to_file(f)
+    blob = client.bucket(BUCKET_NAME).get_blob("videos/" + file_name)
+    _, temp_local_filename = tempfile.mkstemp()
+    blob.download_to_filename(temp_local_filename)
+    print(f"Image {file_name} was downloaded to {temp_local_filename}.")
+    return temp_local_filename
 
 
 @app.route("/openface", methods=["POST"])
@@ -53,14 +54,17 @@ def openface():
         shutil.rmtree(PROCESSED_DIR)
         print(f"removed {PROCESSED_DIR}")
 
-    download_video(file_name)
+    video_saved_path = download_video(file_name)
 
     cp = subprocess.run(
-        ["/app/OpenFace/build/bin/FeatureExtraction", "-f", WORK_DIR + file_name])
+        ["/app/OpenFace/build/bin/FeatureExtraction", "-f", video_saved_path])
     if cp.returncode != 0:
         print("FeatureExtraction failed.", file=sys.stderr)
+        # TODO: return 500
 
     print("FeatureExtraction done.")
+
+    os.remove(video_saved_path)
 
     return ("", 204)
 
