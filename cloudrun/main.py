@@ -14,11 +14,17 @@ PROCESSED_DIR = "/app/processed"
 client = storage.Client()
 
 
+def upload_csv(file_name):
+    blob = client.bucket(BUCKET_NAME).blob("csvs/" + file_name)
+    blob.upload_from_filename(PROCESSED_DIR + "/" + file_name)
+    print(f"OpenFace csv uploaded to: gs://{BUCKET_NAME}/csvs/{file_name}")
+
+
 def download_video(file_name):
     blob = client.bucket(BUCKET_NAME).get_blob("videos/" + file_name)
     _, temp_local_filename = tempfile.mkstemp()
     blob.download_to_filename(temp_local_filename)
-    print(f"Image {file_name} was downloaded to {temp_local_filename}.")
+    print(f"Video {file_name} was downloaded to {temp_local_filename}.")
     return temp_local_filename
 
 
@@ -26,6 +32,11 @@ def download_video(file_name):
 def openface():
     envelope = request.get_json()
     print(f'recieved request: {envelope}')
+
+    # if remove_dir exsists then remove
+    if os.path.isdir(PROCESSED_DIR):
+        shutil.rmtree(PROCESSED_DIR)
+        print(f"removed {PROCESSED_DIR}")
 
     if not envelope:
         msg = "no Pub/Sub message received"
@@ -49,20 +60,17 @@ def openface():
 
     print(f"file name is {file_name}")
 
-    # if remove_dir exsists then remove
-    if os.path.isdir(PROCESSED_DIR):
-        shutil.rmtree(PROCESSED_DIR)
-        print(f"removed {PROCESSED_DIR}")
-
     video_saved_path = download_video(file_name)
 
     cp = subprocess.run(
         ["/app/OpenFace/build/bin/FeatureExtraction", "-f", video_saved_path])
     if cp.returncode != 0:
         print("FeatureExtraction failed.", file=sys.stderr)
-        # TODO: return 500
+        return ("", 500)
 
     print("FeatureExtraction done.")
+
+    upload_csv(video_saved_path.split("/")[-1] + ".csv")
 
     os.remove(video_saved_path)
 
