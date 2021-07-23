@@ -40,6 +40,12 @@ $ sudo gcloud run deploy --image asia.gcr.io/<プロジェクトID>/openface:lat
 Allow unauthenticated invocations to [openface] (y/N)?  N
 ```
 
+#### メモリ上限の設定と更新
+
+```
+$ sudo gcloud run services update <サービス名> --memory 2G
+```
+
 #### リスト
 
 ```
