@@ -14,9 +14,9 @@ PROCESSED_DIR = "/app/processed"
 client = storage.Client()
 
 
-def upload_csv(file_name):
+def upload_csv(processed_csv_file_name, file_name):
     blob = client.bucket(BUCKET_NAME).blob("csvs/" + file_name)
-    blob.upload_from_filename(PROCESSED_DIR + "/" + file_name)
+    blob.upload_from_filename(PROCESSED_DIR + "/" + processed_csv_file_name)
     print(f"OpenFace csv uploaded to: gs://{BUCKET_NAME}/csvs/{file_name}")
 
 
@@ -70,7 +70,8 @@ def openface():
 
     print("FeatureExtraction done.")
 
-    upload_csv(video_saved_path.split("/")[-1] + ".csv")
+    upload_csv(video_saved_path.split("/")
+               [-1] + ".csv", file_name[:-3] + "csv")
 
     os.remove(video_saved_path)
 
