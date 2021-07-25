@@ -101,5 +101,5 @@ $ sudo gcloud pubsub topics publish <トピック名> --message "Runner"
 #### Cloud Storageからの通知を有効化する
 Cloud Storageに変更があった場合にPub/Subトピックにパブリッシュする設定を有効化する
 ```
-$ sudo gsutil notification create -t <トピック名> -e OBJECT_FINALIZE -f json gs://<バケット名>
+$ sudo gsutil notification create -t <トピック名> -e OBJECT_FINALIZE -p <ファイルパス> -f json gs://<バケット名>
 ```
