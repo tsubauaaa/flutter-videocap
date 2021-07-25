@@ -89,7 +89,7 @@ def openface():
             video_saved_path = download_video(file_name, bucket_name)
 
             cp = subprocess.run(
-                ["/app/OpenFace/build/bin/FeatureExtraction", "-f", video_saved_path])
+                ["/app/OpenFace/build/bin/FeatureExtraction", "-f", video_saved_path, "-aus"])
             if cp.returncode != 0:
                 print("FeatureExtraction failed.", file=sys.stderr)
                 return ("", 500)
