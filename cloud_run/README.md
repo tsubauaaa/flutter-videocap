@@ -4,12 +4,12 @@
 
 ```
 $ sudo gcloud auth login
-$ sudo sudo gcloud config set project <プロジェクトID>
+$ sudo gcloud config set project <プロジェクトID>
 $ sudo gcloud config list
 $ sudo gcloud auth configure-docker
 ```
 
-### Cloud Run ラン
+### Cloud Run デプロイ
 
 #### ビルド
 
