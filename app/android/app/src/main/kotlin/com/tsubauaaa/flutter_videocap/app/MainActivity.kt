@@ -1,4 +1,4 @@
-package com.kddi.tshirota.app
+package com.tsubauaaa.flutter_videocap.app
 
 import io.flutter.embedding.android.FlutterActivity
 

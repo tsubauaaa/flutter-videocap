@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class BlinkingTextAnimation extends StatefulWidget {
-  const BlinkingTextAnimation({Key key}) : super(key: key);
+  const BlinkingTextAnimation({Key? key}) : super(key: key);
 
   @override
   _BlinkingTextAnimationState createState() => _BlinkingTextAnimationState();
@@ -10,8 +10,8 @@ class BlinkingTextAnimation extends StatefulWidget {
 
 class _BlinkingTextAnimationState extends State<BlinkingTextAnimation>
     with SingleTickerProviderStateMixin {
-  Animation<Color> animation;
-  AnimationController controller;
+  late Animation<Color?> animation;
+  AnimationController? controller;
 
   initState() {
     super.initState();
@@ -20,24 +20,24 @@ class _BlinkingTextAnimationState extends State<BlinkingTextAnimation>
         duration: const Duration(milliseconds: 1000), vsync: this);
 
     final CurvedAnimation curve =
-        CurvedAnimation(parent: controller, curve: Curves.ease);
+        CurvedAnimation(parent: controller!, curve: Curves.ease);
 
     animation = ColorTween(begin: Colors.white, end: Colors.red).animate(curve);
 
-    animation.addStatusListener((status) {
+    animation!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        controller.reverse();
+        controller!.reverse();
       } else if (status == AnimationStatus.dismissed) {
-        controller.forward();
+        controller!.forward();
       }
       setState(() {});
     });
 
-    controller.forward();
+    controller!.forward();
   }
 
   dispose() {
-    controller.dispose();
+    controller!.dispose();
     super.dispose();
   }
 
@@ -45,7 +45,7 @@ class _BlinkingTextAnimationState extends State<BlinkingTextAnimation>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (BuildContext context, Widget child) {
+      builder: (BuildContext context, _) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -53,10 +53,10 @@ class _BlinkingTextAnimationState extends State<BlinkingTextAnimation>
               CupertinoIcons.circle_fill,
               color: animation.value,
             ),
-            SizedBox(
+            const SizedBox(
               width: 4,
             ),
-            Text(
+            const Text(
               'REC',
               style: TextStyle(
                 color: Colors.white,

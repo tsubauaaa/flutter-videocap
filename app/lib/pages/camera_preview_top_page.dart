@@ -1,40 +1,37 @@
 import 'dart:io';
 
 import 'package:app/components/blinking_text_animation.dart';
-import 'package:app/controllers//camera_provider.dart';
+import 'package:app/models/reognition_model.dart';
+import 'package:app/providers//camera_provider.dart';
+import 'package:app/providers/index_provider.dart';
+import 'package:app/providers/recognitions_provider.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_beep/flutter_beep.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:path/path.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-final indexProvider = StateNotifierProvider((ref) => IndexController());
-
-class IndexController extends StateNotifier<int> {
-  IndexController() : super(0);
-
-  void change() => state == 0 ? state++ : state--;
-}
-
 class CameraPreviewTopPage extends HookWidget {
+  const CameraPreviewTopPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final isRecording = useState(false);
-    final videoCapCmera = useProvider(cameraProvider);
+    final videoCapCamera = useProvider(cameraProvider);
+    final recognition = useProvider(recognitionsProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Capture a video'),
       ),
-      body: videoCapCmera.when(
+      body: videoCapCamera.when(
         data: (camera) => Stack(
           fit: StackFit.expand,
           children: [
             CameraPreview(camera.cameraController),
             if (isRecording.value)
-              Align(
+              const Align(
                 alignment: Alignment.topCenter,
                 child: BlinkingTextAnimation(),
               ),
@@ -43,11 +40,11 @@ class CameraPreviewTopPage extends HookWidget {
               right: 20,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    shape: CircleBorder(),
-                    padding: EdgeInsets.all(16),
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(16),
                     primary: Colors.tealAccent),
                 child: const Icon(
-                  CupertinoIcons.camera_rotate_fill,
+                  Icons.wifi_protected_setup_sharp,
                   size: 20,
                   color: Colors.black,
                 ),
@@ -61,13 +58,13 @@ class CameraPreviewTopPage extends HookWidget {
                 onPressed: () => startAndStopVideoRecording(
                     camera.cameraController, isRecording),
                 child: const Icon(
-                  CupertinoIcons.videocam_circle_fill,
+                  Icons.video_call_sharp,
                 ),
               ),
             )
           ],
         ),
-        loading: () => Center(
+        loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
         error: (err, stack) => Center(

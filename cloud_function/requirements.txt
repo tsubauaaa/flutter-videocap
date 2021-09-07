@@ -1,3 +1,7 @@
 numpy
 opencv-python
 mediapipe
+firebase_admin
+pandas
+fsspec
+gcsfs
